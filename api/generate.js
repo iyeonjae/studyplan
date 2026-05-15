@@ -20,8 +20,14 @@ export default async function handler(req, res) {
   );
 
   const data = await response.json();
-  if (!response.ok) return res.status(response.status).json(data);
+
+  if (!response.ok) {
+    const errMsg = data?.error?.message || JSON.stringify(data);
+    return res.status(response.status).json({ error: errMsg });
+  }
 
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  if (!text) return res.status(500).json({ error: '응답이 비어있어요: ' + JSON.stringify(data).slice(0, 200) });
+
   res.status(200).json({ text });
 }
